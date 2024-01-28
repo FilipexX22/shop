@@ -5,7 +5,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src ./src
 
-RUN mvn clean compile package -DskipTests
+RUN mvn clean compile package
 
 FROM amazoncorretto:21
 
