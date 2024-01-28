@@ -8,14 +8,17 @@ services:
     ports:
       - '5432:5432'
   my-app:
-    image: 'myapp1'
+    build: .
     depends_on:
       - postgres
     ports:
       - '8080:8080'
     environment:
-      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/mydatabase'
-      - 'SPRING_DATASOURCE_USERNAME=myuser'
-      - 'SPRING_DATASOURCE_PASSWORD=secret'
-
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: secret
+      SPRING_FLYWAY_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_FLYWAY_USER: myuser
+      SPRING_FLYWAY_PASSWORD: secret
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration
 
