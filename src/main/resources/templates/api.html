@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sklep SZOP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <script>
+    function deleteProduct(event) {
+        event.preventDefault();
+        var productId = document.getElementById("id").value;
+        var xhr = new XMLHttpRequest();
+        xhr.open("DELETE", "/api/products/" + productId, true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 204) {
+                    alert("Produkt został usunięty.");
+                    location.reload();
+                } else if (xhr.status === 404) {
+                    alert("Produkt o podanym ID nie został znaleziony.");
+                } else {
+                    alert("Wystąpił błąd podczas usuwania produktu.");
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    function updateQuantity(event) {
+        event.preventDefault();
+        var productId = document.getElementById("idToUpdate").value;
+        var quantity = document.getElementById("newQuantity").value;
+        var xhr = new XMLHttpRequest();
+        xhr.open("PUT", "/api/products/" + productId + "/quantity", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 204) {
+                    alert("Ilość produktu została zaktualizowana.");
+                    location.reload();
+                } else if (xhr.status === 404) {
+                    alert("Produkt o podanym ID nie został znaleziony.");
+                } else {
+                    alert("Wystąpił błąd podczas aktualizacji ilości produktu.");
+                }
+            }
+        };
+        xhr.send(JSON.stringify({ quantity: quantity }));
+    }
+
+    function addProduct(event) {
+      event.preventDefault();
+      var productData = {
+        name: document.getElementById("name").value,
+        description: document.getElementById("description").value,
+        imageUrl: document.getElementById("imageUrl").value,
+        quantity: parseInt(document.getElementById("quantity").value),
+        price: parseFloat(document.getElementById("price").value),
+        category: document.getElementById("category").value,
+        manufacturer: document.getElementById("manufacturer").value
+      };
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/products/add", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 201) {
+            alert("Produkt został dodany.");
+            location.reload();
+          } else {
+            alert("Wystąpił błąd podczas dodawania produktu.");
+            alert(xhr.status)
+          }
+        }
+      };
+      xhr.send(JSON.stringify(productData));
+}
+</script>
+    <style>
+        .navbar-brand {
+            color: #000000;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-item .nav-link {
+            color: #000000;
+            font-weight: bold;
+        }
+        .navbar-nav .nav-item:hover .nav-link {
+            background-color: #e9ecef;
+        }
+        .dropdown-item:hover{
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Strona główna</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Kategorie
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li th:each="category : ${categories.get()}">
+                            <a class="dropdown-item" th:href="@{/category/{category}(category=${category})}" th:text="${category}"></a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Kontakt</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item" th:if="${status == 'admin'}">
+                    <a class="nav-link" href="/admin">Administrator</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">
+                        Wyloguj się
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container my-5">
+    <h1 class="text-center">Sklep komputerowy SZOP</h1>
+    <br><br>
+    <div class="row mt-5">
+        <div class="col-12 col-sm-6 col-lg-4 mb-4">
+            <a href="/api/products" class="card text-center text-decoration-none p-5 h-100">
+                <h3 class="card-title">Lista przedmiotów</h3>
+            </a>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4 mb-4">
+            <form onsubmit="deleteProduct(event)">
+                <div class="card p-3">
+                    <label for="id">ID produktu do usunięcia:</label>
+                    <input type="number" name="id" id="id" required class="form-control" />
+                    <button type="submit" class="btn btn-primary mt-3">Usuń produkt</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-4 mb-4">
+            <form onsubmit="updateQuantity(event)">
+                <div class="card p-3">
+                    <label for="idToUpdate">ID produktu do aktualizacji ilości:</label>
+                    <input type="number" name="idToUpdate" id="idToUpdate" required class="form-control" />
+                    <label for="quantity">Nowa ilość:</label>
+                    <input type="number" name="quantity" id="newQuantity" required class="form-control" />
+                    <button type="submit" class="btn btn-primary mt-3">Zaktualizuj ilość</button>
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-4">
+            <form onsubmit="addProduct(event)">
+                <div class="card p-3 h-100">
+                    <div class="mb-3">
+                        <label for="name">Nazwa produktu:</label>
+                        <input type="text" name="name" id="name" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="description">Opis:</label>
+                        <input type="text" name="description" id="description" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="imageUrl">Adres URL obrazka:</label>
+                        <input type="text" name="imageUrl" id="imageUrl" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity">Ilość w magazynie:</label>
+                        <input type="number" name="quantity" id="quantity" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="price">Cena:</label>
+                        <input type="number" name="price" id="price" step="0.01" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="category">Kategoria:</label>
+                        <input type="text" name="category" id="category" required class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="manufacturer">Producent:</label>
+                        <input type="text" name="manufacturer" id="manufacturer" required class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Dodaj produkt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Zdjęcie</th>
+        <th>Nazwa produktu</th>
+        <th>Krótki opis</th>
+        <th>Cena</th>
+        <th>Ilość w magazynie</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="product: ${products}">
+        <td th:text="${product.id}"/>
+        <td><img alt="photo" height="100" th:src="@{${product.imageUrl}}" width="100"></td>
+        <td th:text="${product.name}" />
+        <td th:text="${product.description}" />
+        <td th:text="${product.price}" />
+        <td th:text="${product.quantity}" />
+    </tr>
+    </tbody>
+</table>
+</div>
+
+
+</body>
+</html>

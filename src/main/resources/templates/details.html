@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Sklep SZOP</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.3/umd/popper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+    <style>
+        .navbar-brand {
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .navbar-nav .nav-item .nav-link {
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .navbar-nav .nav-item:hover .nav-link {
+            background-color: #e9ecef;
+        }
+
+        .dropdown-item:hover{
+            background-color: gray;
+        }
+
+        .black-link {
+        color: black;
+        text-decoration: underline;
+        font-weight: normal;
+         }
+
+        .black-link:hover {
+        text-decoration: underline double;
+        font-weight: bold;
+        color: black;
+        }
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">Strona główna</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Kategorie
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li th:each="category : ${categories.get()}">
+                            <a class="dropdown-item" th:href="@{/category/{category}(category=${category})}" th:text="${category}"></a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Kontakt</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item" th:if="${status == 'admin'}">
+                    <a class="nav-link" href="/admin">Administrator</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="${status != null ? '/logout' : '/login'}">
+                        <span th:text="${status != null ? 'Wyloguj się' : 'Zaloguj się'}"></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-4">
+            <img th:src="@{${product.imageUrl}}" alt="Product" class="img-fluid">
+        </div>
+        <div class="col-md-8">
+            <p>
+                <a class="black-link" th:text="${product.category}" th:href="@{/category/{category}(category=${product.category})}" ></a>
+            </p>
+            <h2 th:text="${product.name}"/>
+            <p th:text="${product.manufacturer}"></p>
+            <p>Data dodania: <span th:text="${product.createdAt}"></span></p>
+            <p>Ilość sztuk w magazynie: <span th:text="${product.quantity}"></span></p>
+            <p>Cena: <span th:text="${product.price}"></span></p>
+            <form action="/buy" method="POST">
+                <input type="hidden" name="id" th:value="${product.id}">
+                <label for="quantity">Ilość:</label>
+                <input type="number" name="quantity" value="1" id="quantity" min="1" max="${product.quantity}">
+                <button class="btn btn-outline-success" type="submit">Kup</button>
+            </form>
+            <p th:if="${announcement}" th:text="${announcement}"></p>
+            <hr>
+            <h5>Opis:</h5>
+            <p th:text="${product.description}"></p>
+        </div>
+    </div>
+</div>
+</body>
