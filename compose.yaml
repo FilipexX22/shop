@@ -21,4 +21,3 @@ services:
       SPRING_FLYWAY_USER: myuser
       SPRING_FLYWAY_PASSWORD: secret
       SPRING_FLYWAY_LOCATIONS: classpath:db/migration
-
